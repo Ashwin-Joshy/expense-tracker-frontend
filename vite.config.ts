@@ -13,13 +13,9 @@ export default defineConfig(async () => {
     plugins: [
       react(),
       tailwindcss(),
-    //   locator({
-    //   // optional but useful
-    //   key: 'alt', // press Alt + Click
-    // }),
     ],
     build: {
-    sourcemap: true,
+      sourcemap: false,
     },
     resolve: {
       alias: {

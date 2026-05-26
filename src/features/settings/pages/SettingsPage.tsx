@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import AccountSettings from "../components/AccountSettings";
 import CategoriesSettings from "../components/CategoriesSettings";
 import SettingsNavItem from "../components/SettingsNavItem";
+import { Card } from "../../../shared/components";
 
 export default function SettingsPage() {
   const [params] = useSearchParams();
@@ -20,7 +21,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[240px_1fr]">
-        <aside className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-2">
+        <Card padding={false} className="p-2">
           <div className="space-y-1">
             <SettingsNavItem
               active={active === "account"}
@@ -33,13 +34,12 @@ export default function SettingsPage() {
               to="/settings?tab=categories"
             />
           </div>
-        </aside>
+        </Card>
 
-        <section className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4">
+        <Card>
           {active === "account" ? <AccountSettings /> : <CategoriesSettings />}
-        </section>
+        </Card>
       </div>
     </div>
   );
 }
-

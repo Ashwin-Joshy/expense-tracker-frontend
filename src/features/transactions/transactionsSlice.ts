@@ -3,7 +3,8 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import { backendApi, type ApiError, type Transaction } from "../../shared/services/backendApi";
+import { backendApi, type Transaction } from "../../shared/services/backendApi";
+import { handleThunkError } from "../../shared/services/handleThunkError";
 import { logout } from "../auth/authSlice";
 
 export type TransactionsState = {
@@ -22,9 +23,7 @@ export const hydrateTransactions = createAsyncThunk(
     try {
       return await backendApi.transactions.list();
     } catch (e) {
-      const err = e as ApiError;
-      if (err.status === 401) api.dispatch(logout());
-      throw e;
+      handleThunkError(e, api.dispatch);
     }
   },
 );
@@ -35,9 +34,7 @@ export const createTransaction = createAsyncThunk(
     try {
       return await backendApi.transactions.create(input);
     } catch (e) {
-      const err = e as ApiError;
-      if (err.status === 401) api.dispatch(logout());
-      throw e;
+      handleThunkError(e, api.dispatch);
     }
   },
 );
@@ -49,9 +46,7 @@ export const removeTransaction = createAsyncThunk(
       await backendApi.transactions.delete(id);
       return id;
     } catch (e) {
-      const err = e as ApiError;
-      if (err.status === 401) api.dispatch(logout());
-      throw e;
+      handleThunkError(e, api.dispatch);
     }
   },
 );

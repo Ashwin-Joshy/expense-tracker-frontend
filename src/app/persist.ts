@@ -127,15 +127,15 @@ export function loadPersistedState():
   }
 }
 
-export function persistState(state: PersistableState): string {
+export function persistState(state: PersistableState): void {
   const toPersist: PersistableState = {
     settings: state.settings,
     transactions: state.transactions,
   };
 
   try {
-    return JSON.stringify(toPersist);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toPersist));
   } catch {
-    return "";
+    // localStorage unavailable — silently ignore
   }
 }

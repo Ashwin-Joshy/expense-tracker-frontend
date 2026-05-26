@@ -2,6 +2,16 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
+export function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function parseDateISO(dateISO: string) {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+
 export function monthRangeISO(date: Date) {
   const year = date.getFullYear();
   const monthIndex0 = date.getMonth();

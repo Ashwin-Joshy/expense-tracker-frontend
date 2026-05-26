@@ -4,6 +4,7 @@ import {
   addCategory,
   deleteCategory,
 } from "../settingsSlice";
+import { TextField, Button } from "../../../shared/components";
 
 function CategoryList(props: {
   title: string;
@@ -23,23 +24,22 @@ function CategoryList(props: {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <input
+        <TextField
+          label=""
           value={next}
           onChange={(e) => setNext(e.target.value)}
-          className="w-full max-w-sm rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
           placeholder="New category"
+          className="max-w-sm"
         />
-        <button
-          type="button"
+        <Button
           disabled={!canAdd}
           onClick={() => {
             props.onAdd(next);
             setNext("");
           }}
-          className="rounded-md border border-emerald-500/25 bg-emerald-500/12 px-3 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/18 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Add
-        </button>
+        </Button>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-emerald-900/30 bg-zinc-950/40">

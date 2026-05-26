@@ -40,6 +40,7 @@ export const register = createAsyncThunk(
       return res;
     } catch (e) {
       const err = e as ApiError;
+      if (err.status === 401) clearAuthToken();
       return api.rejectWithValue(err.message);
     }
   },

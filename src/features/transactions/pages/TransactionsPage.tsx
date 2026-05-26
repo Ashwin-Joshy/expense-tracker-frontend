@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { monthRangeISO } from "../../../shared/lib/dateISO";
 import { formatMoney } from "../../../shared/lib/formatMoney";
 import { removeTransaction } from "../transactionsSlice";
+import { Card, SelectField, TextField } from "../../../shared/components";
 
 type DateFilter = "all" | "currentMonth" | "previousMonth" | "custom";
 
@@ -91,42 +92,35 @@ export default function TransactionsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
-        <div className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4 lg:col-span-7">
+        <Card className="lg:col-span-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <label className="space-y-2">
-              <div className="text-xs font-medium text-zinc-400">Filter</div>
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-                className="w-full max-w-sm rounded-md border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
-              >
-                <option value="all">All</option>
-                <option value="currentMonth">Current Month</option>
-                <option value="previousMonth">Previous Month</option>
-                <option value="custom">Custom</option>
-              </select>
-            </label>
+            <SelectField
+              label="Filter"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+              options={[
+                { value: "all", label: "All" },
+                { value: "currentMonth", label: "Current Month" },
+                { value: "previousMonth", label: "Previous Month" },
+                { value: "custom", label: "Custom" },
+              ]}
+              className="max-w-sm"
+            />
 
             {dateFilter === "custom" ? (
               <div className="flex flex-wrap items-end gap-3">
-                <label className="space-y-2">
-                  <div className="text-xs font-medium text-zinc-400">From</div>
-                  <input
-                    type="date"
-                    value={customFromISO}
-                    onChange={(e) => setCustomFromISO(e.target.value)}
-                    className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
-                  />
-                </label>
-                <label className="space-y-2">
-                  <div className="text-xs font-medium text-zinc-400">To</div>
-                  <input
-                    type="date"
-                    value={customToISO}
-                    onChange={(e) => setCustomToISO(e.target.value)}
-                    className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
-                  />
-                </label>
+                <TextField
+                  label="From"
+                  type="date"
+                  value={customFromISO}
+                  onChange={(e) => setCustomFromISO(e.target.value)}
+                />
+                <TextField
+                  label="To"
+                  type="date"
+                  value={customToISO}
+                  onChange={(e) => setCustomToISO(e.target.value)}
+                />
               </div>
             ) : null}
           </div>
@@ -136,42 +130,42 @@ export default function TransactionsPage() {
               "From" date must be on or before "To" date.
             </div>
           ) : null}
-        </div>
+        </Card>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-5">
-          <div className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4">
+          <Card>
             <div className="text-xs font-medium text-zinc-400">
               Total Credit
             </div>
             <div className="mt-1 text-lg font-semibold text-emerald-200">
               {formatMoney(totals.totalCredit, currencyCode)}
             </div>
-          </div>
-          <div className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4">
+          </Card>
+          <Card>
             <div className="text-xs font-medium text-zinc-400">Total Debt</div>
             <div className="mt-1 text-lg font-semibold text-rose-200">
               {formatMoney(totals.totalDebt, currencyCode)}
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4">
+        <Card>
           <div className="text-sm font-semibold text-zinc-100">No transactions</div>
           <div className="mt-2 text-sm text-zinc-400">
             Add your first expense to see it here.
           </div>
-        </div>
+        </Card>
       ) : filteredItems.length === 0 ? (
-        <div className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4">
+        <Card>
           <div className="text-sm font-semibold text-zinc-100">
             No transactions for this filter
           </div>
           <div className="mt-2 text-sm text-zinc-400">
             Try selecting a different date range.
           </div>
-        </div>
+        </Card>
       ) : (
         <div className="overflow-hidden rounded-xl border border-emerald-900/30 bg-zinc-950/40">
           <div className="grid grid-cols-12 gap-3 border-b border-white/5 bg-white/[0.02] px-4 py-3 text-xs font-medium text-zinc-400">

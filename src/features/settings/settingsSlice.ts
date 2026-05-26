@@ -3,7 +3,9 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import { backendApi, type ApiError, type CurrencyCode } from "../../shared/services/backendApi";
+import { backendApi, type CurrencyCode } from "../../shared/services/backendApi";
+import { handleThunkError } from "../../shared/services/handleThunkError";
+import { normalizeCategory } from "../../shared/lib/strings";
 import { logout } from "../auth/authSlice";
 
 export type { CurrencyCode };
@@ -26,10 +28,6 @@ const initialState: SettingsState = {
   hydrated: false,
 };
 
-function normalizeCategory(value: string) {
-  return value.trim().replace(/\s+/g, " ");
-}
-
 export const hydrateSettings = createAsyncThunk(
   "settings/hydrate",
   async (_, api) => {
@@ -40,9 +38,7 @@ export const hydrateSettings = createAsyncThunk(
       ]);
       return { user, categories };
     } catch (e) {
-      const err = e as ApiError;
-      if (err.status === 401) api.dispatch(logout());
-      throw e;
+      handleThunkError(e, api.dispatch);
     }
   },
 );
@@ -57,9 +53,7 @@ export const syncUserProfile = createAsyncThunk(
     try {
       return await backendApi.users.patchMe(patch);
     } catch (e) {
-      const err = e as ApiError;
-      if (err.status === 401) api.dispatch(logout());
-      throw e;
+      handleThunkError(e, api.dispatch);
     }
   },
 );
@@ -72,9 +66,7 @@ export const addCategory = createAsyncThunk(
       if (!name) return await backendApi.categories.getAll();
       return await backendApi.categories.add({ kind: input.kind, name });
     } catch (e) {
-      const err = e as ApiError;
-      if (err.status === 401) api.dispatch(logout());
-      throw e;
+      handleThunkError(e, api.dispatch);
     }
   },
 );
@@ -87,9 +79,7 @@ export const deleteCategory = createAsyncThunk(
       if (!name) return await backendApi.categories.getAll();
       return await backendApi.categories.delete({ kind: input.kind, name });
     } catch (e) {
-      const err = e as ApiError;
-      if (err.status === 401) api.dispatch(logout());
-      throw e;
+      handleThunkError(e, api.dispatch);
     }
   },
 );

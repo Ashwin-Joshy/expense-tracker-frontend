@@ -47,8 +47,7 @@ export type AuthResponse = {
 };
 
 function getBaseUrl(): string {
-  const raw = (import.meta as { env?: Record<string, string | undefined> }).env
-    ?.VITE_API_URL;
+  const raw = import.meta.env.VITE_API_URL;
   const base = raw?.trim() ? raw.trim() : "http://localhost:3000/api";
   return base.replace(/\/+$/, "");
 }

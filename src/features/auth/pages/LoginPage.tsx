@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { bootstrapApp } from "../../../app/bootstrap";
 import { login, register } from "../authSlice";
-
-function normalizeEmail(value: string) {
-  return value.trim().toLowerCase();
-}
+import { normalizeEmail } from "../../../shared/lib/strings";
+import { TextField, Button } from "../../../shared/components";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
@@ -25,9 +22,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!token) return;
-    dispatch(bootstrapApp());
     navigate("/", { replace: true });
-  }, [dispatch, navigate, token]);
+  }, [navigate, token]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -85,63 +81,50 @@ export default function LoginPage() {
 
           <form onSubmit={onSubmit} className="space-y-4">
             {mode === "register" ? (
-              <label className="block space-y-1.5">
-                <div className="text-xs font-semibold text-zinc-300">Name (optional)</div>
-                <input
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-zinc-950/50 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-400/30"
-                  placeholder="Alice"
-                  autoComplete="name"
-                />
-              </label>
+              <TextField
+                label="Name (optional)"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Alice"
+                autoComplete="name"
+              />
             ) : null}
 
-            <label className="block space-y-1.5">
-              <div className="text-xs font-semibold text-zinc-300">Email</div>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-zinc-950/50 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-400/30"
-                placeholder="you@example.com"
-                type="email"
-                autoComplete="email"
-              />
-            </label>
+            <TextField
+              label="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              type="email"
+              autoComplete="email"
+            />
 
-            <label className="block space-y-1.5">
-              <div className="text-xs font-semibold text-zinc-300">Password</div>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-zinc-950/50 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-400/30"
-                placeholder="At least 6 characters"
-                type="password"
-                autoComplete={mode === "login" ? "current-password" : "new-password"}
-              />
-            </label>
+            <TextField
+              label="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="At least 6 characters"
+              type="password"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+            />
 
             {errorMessage ? (
-              <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+              <div role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
                 {errorMessage}
               </div>
             ) : null}
 
-            <button
+            <Button
               type="submit"
               disabled={!canSubmit}
-              className={
-                canSubmit
-                  ? "w-full rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-semibold text-emerald-200 ring-1 ring-emerald-500/30 hover:bg-emerald-500/26"
-                  : "w-full cursor-not-allowed rounded-lg bg-white/5 px-3 py-2 text-sm font-semibold text-zinc-400 ring-1 ring-white/10"
-              }
+              className="w-full"
             >
               {status === "loading"
                 ? "Please wait…"
                 : mode === "login"
                   ? "Sign in"
                   : "Create account"}
-            </button>
+            </Button>
           </form>
         </div>
 

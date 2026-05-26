@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { logout } from "../../features/auth/authSlice";
+import { Avatar } from "../../shared/components";
 
 type LogoSpec = {
   mark: string;
@@ -22,7 +23,6 @@ function pick<T>(items: readonly T[]) {
 function generateLogoSpec(): LogoSpec {
   const marks = ["ET", "EX", "XP", "TR", "DG", "TX"] as const;
 
-  // Emerald-forward hues so the brand feels cohesive with a dark/green theme.
   const hues = [142, 148, 155, 165, 175] as const;
   const hueA = pick(hues);
   const hueB = pick(hues);
@@ -61,7 +61,10 @@ export default function Navbar() {
   const logo = useMemo(loadOrCreateLogoSpec, []);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { userName, avatarDataUrl } = useAppSelector((s) => s.settings);
+  const { userName, avatarDataUrl } = useAppSelector((s) => ({
+    userName: s.settings.userName,
+    avatarDataUrl: s.settings.avatarDataUrl,
+  }));
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -159,17 +162,7 @@ export default function Navbar() {
                 className="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border border-emerald-900/30 bg-zinc-950/95 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur"
               >
                 <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
-                  {avatarDataUrl ? (
-                    <img
-                      src={avatarDataUrl}
-                      alt=""
-                      className="size-10 rounded-full object-cover ring-1 ring-white/10"
-                    />
-                  ) : (
-                    <div className="grid size-10 place-items-center rounded-full bg-white/10 text-xs font-semibold text-zinc-200 ring-1 ring-white/10">
-                      {userName.trim().slice(0, 2).toUpperCase() || "U"}
-                    </div>
-                  )}
+                  <Avatar src={avatarDataUrl} name={userName} size="md" />
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold text-zinc-100">
                       {userName}

@@ -2,12 +2,8 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../../../app/hooks";
 import { formatMoney } from "../../../shared/lib/formatMoney";
-
-function parseDateISO(dateISO: string) {
-  const [y, m, d] = dateISO.split("-").map(Number);
-  if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d);
-}
+import { parseDateISO } from "../../../shared/lib/dateISO";
+import { Card } from "../../../shared/components";
 
 export default function DashboardPage() {
   const { currencyCode } = useAppSelector((s) => s.settings);
@@ -68,10 +64,7 @@ export default function DashboardPage() {
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {computed.stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4 shadow-[0_0_0_1px_rgba(16,185,129,0.05)]"
-          >
+          <Card key={s.label} className="shadow-[0_0_0_1px_rgba(16,185,129,0.05)]">
             <div className="text-xs font-medium text-zinc-400">{s.label}</div>
             <div className="mt-2 text-2xl font-semibold text-zinc-50">
               {formatMoney(s.value, currencyCode)}
@@ -81,12 +74,12 @@ export default function DashboardPage() {
                 ? "Add transactions to populate."
                 : `${transactions.length} total transaction(s).`}
             </div>
-          </div>
+          </Card>
         ))}
       </section>
 
       <section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <div className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4">
+        <Card>
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-zinc-100">
               Recent Activity
@@ -131,9 +124,9 @@ export default function DashboardPage() {
               ))}
             </ul>
           )}
-        </div>
+        </Card>
 
-        <div className="rounded-xl border border-emerald-900/30 bg-zinc-950/40 p-4">
+        <Card>
           <h2 className="text-sm font-semibold text-zinc-100">Tips</h2>
           <p className="mt-2 text-sm text-zinc-400">
             Update your categories and currency from Settings.
@@ -141,7 +134,7 @@ export default function DashboardPage() {
           <div className="mt-4 rounded-lg border border-emerald-500/10 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-4 text-sm text-zinc-200">
             Your data is stored in the database and syncs across reloads.
           </div>
-        </div>
+        </Card>
       </section>
     </div>
   );

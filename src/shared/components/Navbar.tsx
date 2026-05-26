@@ -65,29 +65,38 @@ export default function Navbar() {
     userName: s.settings.userName,
     avatarDataUrl: s.settings.avatarDataUrl,
   }));
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
+  const addRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-
-    function onPointerDown(e: MouseEvent) {
-      const el = menuRef.current;
-      if (!el) return;
-      if (e.target instanceof Node && !el.contains(e.target)) setOpen(false);
+    function dismissRefs(e: MouseEvent) {
+      [profileRef, addRef].forEach((ref) => {
+        if (!ref.current) return;
+        if (e.target instanceof Node && !ref.current.contains(e.target)) {
+          if (ref === profileRef) setProfileOpen(false);
+          else setAddOpen(false);
+        }
+      });
     }
 
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setProfileOpen(false);
+        setAddOpen(false);
+      }
     }
 
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
+    if (profileOpen || addOpen) {
+      document.addEventListener("mousedown", dismissRefs);
+      document.addEventListener("keydown", onKeyDown);
+      return () => {
+        document.removeEventListener("mousedown", dismissRefs);
+        document.removeEventListener("keydown", onKeyDown);
+      };
+    }
+  }, [profileOpen, addOpen]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-emerald-900/30 bg-zinc-950/85 backdrop-blur">
@@ -120,29 +129,49 @@ export default function Navbar() {
             Transactions
           </NavLink>
 
-          <NavLink
-            to="/add-expense"
-            className={({ isActive }) => {
-              const base =
-                "rounded-md border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60";
-
-              if (isActive) {
-                return `${base} border-emerald-500/40 bg-emerald-500/18 text-emerald-200`;
-              }
-
-              return `${base} border-emerald-500/25 bg-emerald-500/12 text-emerald-300 hover:bg-emerald-500/18 hover:text-emerald-200`;
-            }}
-          >
-            Add Expense
-          </NavLink>
-
-          <div ref={menuRef} className="relative ml-1">
+          <div ref={addRef} className="relative">
             <button
               type="button"
-              onClick={() => setOpen((v) => !v)}
+              onClick={() => setAddOpen((v) => !v)}
+              className="rounded-md border border-emerald-500/25 bg-emerald-500/12 px-3 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/18 hover:text-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              aria-haspopup="menu"
+              aria-expanded={addOpen}
+            >
+              Add Transaction
+            </button>
+
+            {addOpen ? (
+              <div
+                role="menu"
+                className="absolute right-0 z-10 mt-2 w-32 overflow-hidden rounded-xl border border-emerald-900/30 bg-zinc-950/95 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur"
+              >
+                <Link
+                  to="/add-expense"
+                  onClick={() => setAddOpen(false)}
+                  role="menuitem"
+                  className="block px-4 py-3 text-sm text-zinc-200 hover:bg-white/5 hover:text-white"
+                >
+                  Add Expense
+                </Link>
+                <Link
+                  to="/add-credit"
+                  onClick={() => setAddOpen(false)}
+                  role="menuitem"
+                  className="block px-4 py-3 text-sm text-zinc-200 hover:bg-white/5 hover:text-white"
+                >
+                  Add Credit
+                </Link>
+              </div>
+            ) : null}
+          </div>
+
+          <div ref={profileRef} className="relative ml-1">
+            <button
+              type="button"
+              onClick={() => setProfileOpen((v) => !v)}
               className="grid size-10 place-items-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-zinc-100 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
               aria-haspopup="menu"
-              aria-expanded={open}
+              aria-expanded={profileOpen}
               aria-label="Profile menu"
             >
               {avatarDataUrl ? (
@@ -156,7 +185,7 @@ export default function Navbar() {
               )}
             </button>
 
-            {open ? (
+            {profileOpen ? (
               <div
                 role="menu"
                 className="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border border-emerald-900/30 bg-zinc-950/95 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur"
@@ -173,7 +202,7 @@ export default function Navbar() {
 
                 <Link
                   to="/settings"
-                  onClick={() => setOpen(false)}
+                  onClick={() => setProfileOpen(false)}
                   role="menuitem"
                   className="block px-4 py-3 text-sm text-zinc-200 hover:bg-white/5 hover:text-white"
                 >
@@ -183,7 +212,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={async () => {
-                    setOpen(false);
+                    setProfileOpen(false);
                     await dispatch(logout());
                     navigate("/login", { replace: true });
                   }}

@@ -4,6 +4,7 @@ import { useAppSelector } from "../../../app/hooks";
 import { formatMoney } from "../../../shared/lib/formatMoney";
 import { parseDateISO } from "../../../shared/lib/dateISO";
 import { Card } from "../../../shared/components";
+import ChatButton from "../../aiChat/components/ChatButton";
 
 export default function DashboardPage() {
   const { currencyCode } = useAppSelector((s) => s.settings);
@@ -136,6 +137,7 @@ export default function DashboardPage() {
           </div>
         </Card>
       </section>
+      <ChatButton />
     </div>
   );
 }

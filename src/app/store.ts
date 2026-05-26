@@ -2,12 +2,14 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authReducer from "../features/auth/authSlice";
 import settingsReducer from "../features/settings/settingsSlice";
 import transactionsReducer from "../features/transactions/transactionsSlice";
+import aiChatReducer from "../features/aiChat/aiChatSlice";
 import { loadPersistedState, persistState } from "./persist";
 
 const rootReducer = combineReducers({
   auth: authReducer,
   settings: settingsReducer,
   transactions: transactionsReducer,
+  aiChat: aiChatReducer,
 });
 
 const preloadedState = loadPersistedState();

@@ -41,6 +41,33 @@ export type AuthUser = {
   email: string;
 };
 
+export type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  timestampISO: string;
+};
+
+export type ChatResponse = {
+  conversationId: string;
+  userMessage: ChatMessage;
+  assistantMessage: ChatMessage;
+};
+
+export type Conversation = {
+  id: string;
+  title: string;
+  updatedAtISO: string;
+  createdAtISO: string;
+};
+
+export type ConversationDetail = {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAtISO: string;
+  updatedAtISO: string;
+};
+
 export type AuthResponse = {
   accessToken: string;
   user: AuthUser;
@@ -174,6 +201,32 @@ export const backendApi = {
       return apiRequest<{ deleted: true }>(`/transactions/${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
+    },
+  },
+  ai: {
+    chat(body: { message: string; conversationId?: string }) {
+      return apiRequest<ChatResponse>("/ai/chat", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+    },
+    getConversations() {
+      return apiRequest<Conversation[]>("/ai/conversations");
+    },
+    getConversation(id: string) {
+      return apiRequest<ConversationDetail>(`/ai/conversations/${encodeURIComponent(id)}`);
+    },
+    renameConversation(id: string, title: string) {
+      return apiRequest<{ updated: boolean; title: string }>(
+        `/ai/conversations/${encodeURIComponent(id)}`,
+        { method: "PATCH", body: JSON.stringify({ title }) },
+      );
+    },
+    deleteConversation(id: string) {
+      return apiRequest<{ deleted: boolean }>(
+        `/ai/conversations/${encodeURIComponent(id)}`,
+        { method: "DELETE" },
+      );
     },
   },
 } as const;

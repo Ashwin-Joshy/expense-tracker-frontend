@@ -7,6 +7,7 @@ import AddExpensePage from "../features/expenses/pages/AddExpensePage";
 import SettingsPage from "../features/settings/pages/SettingsPage";
 import AddCreditPage from "../features/credits/pages/AddCreditPage";
 import LoginPage from "../features/auth/pages/LoginPage";
+import AIChatPage from "../features/aiChat/pages/AIChatPage";
 import RequireAuth from "../features/auth/components/RequireAuth";
 
 export const router = createBrowserRouter([
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: "add-expense", element: <AddExpensePage /> },
       { path: "add-credit", element: <AddCreditPage /> },
       { path: "settings", element: <SettingsPage /> },
+      { path: "ai-chat", element: <AIChatPage /> },
     ],
   },
 ]);

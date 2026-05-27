@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   backendApi,
   type ApiError,
@@ -6,11 +6,14 @@ import {
   type Conversation,
 } from "../../shared/services/backendApi";
 
+export type StreamStatus = "idle" | "thinking" | "responding" | "tool_executing";
+
 export type AiChatState = {
   conversations: Conversation[];
   currentConversationId: string | null;
   messages: ChatMessage[];
-  isLoading: boolean;
+  streamStatus: StreamStatus;
+  streamingText: string;
   errorConversations: string | null;
   errorChat: string | null;
 };
@@ -19,32 +22,11 @@ const initialState: AiChatState = {
   conversations: [],
   currentConversationId: null,
   messages: [],
-  isLoading: false,
+  streamStatus: "idle",
+  streamingText: "",
   errorConversations: null,
   errorChat: null,
 };
-
-export const sendMessage = createAsyncThunk(
-  "aiChat/sendMessage",
-  async (
-    _input: { message: string },
-    api,
-  ) => {
-    const state = (api.getState() as { aiChat: AiChatState }).aiChat;
-    try {
-      const res = await backendApi.ai.chat({
-        message: _input.message,
-        ...(state.currentConversationId
-          ? { conversationId: state.currentConversationId }
-          : {}),
-      });
-      return res;
-    } catch (e) {
-      const err = e as ApiError;
-      return api.rejectWithValue(err.message);
-    }
-  },
-);
 
 export const loadConversations = createAsyncThunk(
   "aiChat/loadConversations",
@@ -101,32 +83,72 @@ const aiChatSlice = createSlice({
     newChat(state) {
       state.currentConversationId = null;
       state.messages = [];
+      state.streamStatus = "idle";
+      state.streamingText = "";
       state.errorChat = null;
     },
+
     clearError(state) {
       state.errorChat = null;
       state.errorConversations = null;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(sendMessage.pending, (state) => {
-      state.isLoading = true;
-      state.errorChat = null;
-    });
-    builder.addCase(sendMessage.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.currentConversationId = action.payload.conversationId;
-      state.messages.push(action.payload.userMessage);
-      state.messages.push(action.payload.assistantMessage);
-    });
-    builder.addCase(sendMessage.rejected, (state, action) => {
-      state.isLoading = false;
-      state.errorChat =
-        typeof action.payload === "string"
-          ? action.payload
-          : "Failed to send message";
-    });
 
+    appendUserMessage(state, action: PayloadAction<{ content: string }>) {
+      state.messages.push({
+        role: "user",
+        content: action.payload.content,
+        timestampISO: new Date().toISOString(),
+      });
+    },
+
+    startStreaming(state) {
+      state.streamStatus = "thinking";
+      state.streamingText = "";
+      state.errorChat = null;
+    },
+
+    setStreamStatus(state, action: PayloadAction<StreamStatus>) {
+      state.streamStatus = action.payload;
+    },
+
+    appendStreamChunk(state, action: PayloadAction<string>) {
+      state.streamingText += action.payload;
+    },
+
+    finishStreaming(state, action: PayloadAction<{ conversationId: string }>) {
+      if (state.streamingText) {
+        state.messages.push({
+          role: "assistant",
+          content: state.streamingText,
+          timestampISO: new Date().toISOString(),
+        });
+      }
+      state.currentConversationId = action.payload.conversationId;
+      state.streamStatus = "idle";
+      state.streamingText = "";
+    },
+
+    cancelStreaming(state, action: PayloadAction<{ conversationId: string }>) {
+      if (state.streamingText) {
+        state.messages.push({
+          role: "assistant",
+          content: state.streamingText,
+          timestampISO: new Date().toISOString(),
+        });
+      }
+      state.currentConversationId = action.payload.conversationId;
+      state.streamStatus = "idle";
+      state.streamingText = "";
+    },
+
+    streamError(state, action: PayloadAction<string>) {
+      state.streamStatus = "idle";
+      state.streamingText = "";
+      state.errorChat = action.payload;
+    },
+  },
+
+  extraReducers: (builder) => {
     builder.addCase(loadConversations.fulfilled, (state, action) => {
       state.conversations = action.payload;
       state.errorConversations = null;
@@ -136,16 +158,15 @@ const aiChatSlice = createSlice({
     });
 
     builder.addCase(loadConversation.pending, (state) => {
-      state.isLoading = true;
+      state.streamStatus = "idle";
+      state.streamingText = "";
       state.errorChat = null;
     });
     builder.addCase(loadConversation.fulfilled, (state, action) => {
-      state.isLoading = false;
       state.currentConversationId = action.payload.id;
       state.messages = action.payload.messages;
     });
     builder.addCase(loadConversation.rejected, (state, action) => {
-      state.isLoading = false;
       state.errorChat =
         typeof action.payload === "string"
           ? action.payload
@@ -173,11 +194,23 @@ const aiChatSlice = createSlice({
       if (state.currentConversationId === action.payload) {
         state.currentConversationId = null;
         state.messages = [];
+        state.streamStatus = "idle";
+        state.streamingText = "";
         state.errorChat = null;
       }
     });
   },
 });
 
-export const { newChat, clearError } = aiChatSlice.actions;
+export const {
+  newChat,
+  clearError,
+  appendUserMessage,
+  startStreaming,
+  setStreamStatus,
+  appendStreamChunk,
+  finishStreaming,
+  cancelStreaming,
+  streamError,
+} = aiChatSlice.actions;
 export default aiChatSlice.reducer;

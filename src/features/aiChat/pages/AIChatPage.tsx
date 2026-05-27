@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { sendMessage, loadConversations, clearError } from "../aiChatSlice";
+import { loadConversations, clearError, appendUserMessage } from "../aiChatSlice";
+import { useAiChatSocket } from "../useAiChatSocket";
 import ChatSidebar from "../components/ChatSidebar";
 import MessageBubble from "../components/MessageBubble";
 import ChatInput from "../components/ChatInput";
 import SuggestedQuestions from "../components/SuggestedQuestions";
-import TypingIndicator from "../components/TypingIndicator";
 
 export default function AIChatPage() {
   const dispatch = useAppDispatch();
   const messages = useAppSelector((s) => s.aiChat.messages);
-  const isLoading = useAppSelector((s) => s.aiChat.isLoading);
+  const streamStatus = useAppSelector((s) => s.aiChat.streamStatus);
+  const streamingText = useAppSelector((s) => s.aiChat.streamingText);
   const errorChat = useAppSelector((s) => s.aiChat.errorChat);
   const currentId = useAppSelector((s) => s.aiChat.currentConversationId);
+
+  const { send, cancel, isStreaming } = useAiChatSocket();
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -22,23 +25,25 @@ export default function AIChatPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+  }, [messages, streamingText, streamStatus]);
 
   const handleSend = useCallback(
     (message: string) => {
-      dispatch(sendMessage({ message }));
+      dispatch(appendUserMessage({ content: message }));
+      send(message);
     },
-    [dispatch],
+    [dispatch, send],
   );
 
   const handleSuggested = useCallback(
     (question: string) => {
-      dispatch(sendMessage({ message: question }));
+      dispatch(appendUserMessage({ content: question }));
+      send(question);
     },
-    [dispatch],
+    [dispatch, send],
   );
 
-  const isEmpty = messages.length === 0 && !isLoading;
+  const isEmpty = messages.length === 0 && !isStreaming;
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
@@ -143,12 +148,29 @@ export default function AIChatPage() {
                     timestampISO={m.timestampISO}
                   />
                 ))}
-                {isLoading && <TypingIndicator />}
+
+                {isStreaming && (
+                  <MessageBubble
+                    role="assistant"
+                    content={streamingText}
+                    timestampISO={new Date().toISOString()}
+                    isStreaming={
+                      streamStatus === "responding" ||
+                      streamStatus === "thinking"
+                    }
+                  />
+                )}
+
                 <div ref={bottomRef} />
               </div>
             </div>
 
-            <ChatInput onSend={handleSend} disabled={isLoading} />
+            <ChatInput
+              onSend={handleSend}
+              disabled={isStreaming}
+              onCancel={cancel}
+              isStreaming={isStreaming}
+            />
           </div>
         )}
       </main>

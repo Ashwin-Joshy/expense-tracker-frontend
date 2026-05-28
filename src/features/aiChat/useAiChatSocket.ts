@@ -13,6 +13,12 @@ import {
   type StreamStatus,
 } from "./aiChatSlice";
 
+function getSocketBaseUrl(): string {
+  const raw = import.meta.env.VITE_API_URL;
+  const base = raw?.trim() ? raw.trim() : "http://localhost:3000/api";
+  return base.replace(/\/api\/?$/, "");
+}
+
 export function useAiChatSocket() {
   const dispatch = useAppDispatch();
   const currentConversationId = useAppSelector(
@@ -29,7 +35,7 @@ export function useAiChatSocket() {
     const token = getAuthToken();
     if (!token) return;
 
-    const socket = io("http://localhost:3000/ai", {
+    const socket = io(`${getSocketBaseUrl()}/ai`, {
       auth: { token: `Bearer ${token}` },
       reconnection: true,
       reconnectionAttempts: 10,

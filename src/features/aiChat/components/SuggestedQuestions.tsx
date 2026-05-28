@@ -3,6 +3,8 @@ const QUESTIONS = [
   "How much did I spend on food?",
   "Summarize my spending trends",
   "What can I afford to save?",
+  "Create a new transaction",
+  "What have I done today?",
 ];
 
 type Props = {

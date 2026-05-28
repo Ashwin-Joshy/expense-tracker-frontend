@@ -5,6 +5,7 @@ import {
 } from "@reduxjs/toolkit";
 import { backendApi, type Transaction } from "../../shared/services/backendApi";
 import { handleThunkError } from "../../shared/services/handleThunkError";
+import { daysAgoISO } from "../../shared/lib/dateISO";
 import { logout } from "../auth/authSlice";
 
 export type TransactionsState = {
@@ -21,10 +22,19 @@ export const hydrateTransactions = createAsyncThunk(
   "transactions/hydrate",
   async (_, api) => {
     try {
-      return await backendApi.transactions.list();
+      return await backendApi.transactions.list({
+        fromISO: daysAgoISO(7),
+      });
     } catch (e) {
       handleThunkError(e, api.dispatch);
     }
+  },
+);
+
+export const loadAllTransactions = createAsyncThunk(
+  "transactions/loadAll",
+  async () => {
+    return await backendApi.transactions.list();
   },
 );
 
@@ -69,6 +79,9 @@ const transactionsSlice = createSlice({
     });
     builder.addCase(hydrateTransactions.rejected, (state) => {
       state.hydrated = true;
+    });
+    builder.addCase(loadAllTransactions.fulfilled, (state, action) => {
+      state.items = action.payload;
     });
     builder.addCase(createTransaction.fulfilled, (state, action) => {
       state.items.unshift(action.payload);

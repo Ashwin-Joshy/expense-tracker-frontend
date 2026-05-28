@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { loadConversations, clearError, appendUserMessage } from "../aiChatSlice";
 import { useAiChatSocket } from "../useAiChatSocket";
@@ -16,19 +16,31 @@ export default function AIChatPage() {
   const currentId = useAppSelector((s) => s.aiChat.currentConversationId);
 
   const { send, cancel, isStreaming } = useAiChatSocket();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScroll = useRef(true);
 
   useEffect(() => {
     dispatch(loadConversations());
   }, [dispatch]);
 
   useEffect(() => {
+    if (!shouldAutoScroll.current) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText, streamStatus]);
 
+  const handleScroll = useCallback(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    shouldAutoScroll.current = nearBottom;
+  }, []);
+
   const handleSend = useCallback(
     (message: string) => {
+      shouldAutoScroll.current = true;
       dispatch(appendUserMessage({ content: message }));
       send(message);
     },
@@ -37,6 +49,7 @@ export default function AIChatPage() {
 
   const handleSuggested = useCallback(
     (question: string) => {
+      shouldAutoScroll.current = true;
       dispatch(appendUserMessage({ content: question }));
       send(question);
     },
@@ -46,10 +59,23 @@ export default function AIChatPage() {
   const isEmpty = messages.length === 0 && !isStreaming;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      <ChatSidebar />
+    <div className="flex -mx-4 -my-6 h-[calc(100vh-4rem)]">
+      <ChatSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className="flex flex-1 flex-col bg-zinc-950">
+        <div className="flex items-center gap-2 border-b border-white/5 px-4 py-2 lg:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="rounded p-1.5 text-zinc-400 hover:text-zinc-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <span className="text-sm font-semibold text-zinc-300">AI Chat</span>
+        </div>
         {errorChat && (
           <div className="mx-4 mt-3 flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/10 px-4 py-2.5 text-sm text-rose-300">
             <svg
@@ -132,47 +158,49 @@ export default function AIChatPage() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-1 flex-col">
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <div className="mx-auto max-w-2xl space-y-4">
-                {currentId && (
-                  <p className="text-center text-xs text-zinc-600">
-                    Conversation started
-                  </p>
-                )}
-                {messages.map((m, i) => (
-                  <MessageBubble
-                    key={i}
-                    role={m.role}
-                    content={m.content}
-                    timestampISO={m.timestampISO}
-                  />
-                ))}
+          <div
+            ref={messagesRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto px-4 py-4"
+          >
+            <div className="mx-auto max-w-2xl space-y-4">
+              {currentId && (
+                <p className="text-center text-xs text-zinc-600">
+                  Conversation started
+                </p>
+              )}
+              {messages.map((m, i) => (
+                <MessageBubble
+                  key={i}
+                  role={m.role}
+                  content={m.content}
+                  timestampISO={m.timestampISO}
+                />
+              ))}
 
-                {isStreaming && (
-                  <MessageBubble
-                    role="assistant"
-                    content={streamingText}
-                    timestampISO={new Date().toISOString()}
-                    isStreaming={
-                      streamStatus === "responding" ||
-                      streamStatus === "thinking"
-                    }
-                  />
-                )}
+              {isStreaming && (
+                <MessageBubble
+                  role="assistant"
+                  content={streamingText}
+                  timestampISO={new Date().toISOString()}
+                  isStreaming={
+                    streamStatus === "responding" ||
+                    streamStatus === "thinking"
+                  }
+                />
+              )}
 
-                <div ref={bottomRef} />
-              </div>
+              <div ref={bottomRef} />
             </div>
-
-            <ChatInput
-              onSend={handleSend}
-              disabled={isStreaming}
-              onCancel={cancel}
-              isStreaming={isStreaming}
-            />
           </div>
         )}
+
+        <ChatInput
+          onSend={handleSend}
+          disabled={isStreaming}
+          onCancel={cancel}
+          isStreaming={isStreaming}
+        />
       </main>
     </div>
   );

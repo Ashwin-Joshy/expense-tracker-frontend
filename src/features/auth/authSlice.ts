@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { backendApi, type ApiError, type AuthUser } from "../../shared/services/backendApi";
 import { clearAuthToken, getAuthToken, setAuthToken } from "../../shared/services/authToken";
+import { clearPersistedState } from "../../app/persist";
 
 export type AuthState = {
   token: string | null;
@@ -48,6 +49,7 @@ export const register = createAsyncThunk(
 
 export const logout = createAsyncThunk("auth/logout", async () => {
   clearAuthToken();
+  clearPersistedState();
   return true;
 });
 

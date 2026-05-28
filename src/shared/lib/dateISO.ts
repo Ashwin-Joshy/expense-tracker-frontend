@@ -2,8 +2,14 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export function todayISO() {
+export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+export function daysAgoISO(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
 }
 
 export function parseDateISO(dateISO: string) {

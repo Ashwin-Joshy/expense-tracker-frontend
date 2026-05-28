@@ -1,24 +1,32 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-import { monthRangeISO } from "../../../shared/lib/dateISO";
+import { daysAgoISO, monthRangeISO, todayISO } from "../../../shared/lib/dateISO";
 import { formatMoney } from "../../../shared/lib/formatMoney";
-import { removeTransaction } from "../transactionsSlice";
+import { loadAllTransactions, removeTransaction } from "../transactionsSlice";
 import { Card, SelectField, TextField } from "../../../shared/components";
 
-type DateFilter = "all" | "currentMonth" | "previousMonth" | "custom";
+type DateFilter = "last7days" | "all" | "currentMonth" | "previousMonth" | "custom";
 
 export default function TransactionsPage() {
   const dispatch = useAppDispatch();
   const { currencyCode } = useAppSelector((s) => s.settings);
   const items = useAppSelector((s) => s.transactions.items);
 
-  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  useEffect(() => {
+    dispatch(loadAllTransactions());
+  }, [dispatch]);
+
+  const [dateFilter, setDateFilter] = useState<DateFilter>("last7days");
   const [customFromISO, setCustomFromISO] = useState("");
   const [customToISO, setCustomToISO] = useState("");
 
   const activeRange = useMemo(() => {
     if (dateFilter === "all") return { fromISO: undefined, toISO: undefined };
+
+    if (dateFilter === "last7days") {
+      return { fromISO: daysAgoISO(7), toISO: todayISO() };
+    }
 
     const now = new Date();
     if (dateFilter === "currentMonth") {
@@ -93,33 +101,36 @@ export default function TransactionsPage() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
         <Card className="lg:col-span-7">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <SelectField
               label="Filter"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value as DateFilter)}
               options={[
+                { value: "last7days", label: "Last 7 Days" },
                 { value: "all", label: "All" },
                 { value: "currentMonth", label: "Current Month" },
                 { value: "previousMonth", label: "Previous Month" },
                 { value: "custom", label: "Custom" },
               ]}
-              className="max-w-sm"
+              className="w-full sm:max-w-sm"
             />
 
             {dateFilter === "custom" ? (
-              <div className="flex flex-wrap items-end gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <TextField
                   label="From"
                   type="date"
                   value={customFromISO}
                   onChange={(e) => setCustomFromISO(e.target.value)}
+                  className="w-full sm:w-auto"
                 />
                 <TextField
                   label="To"
                   type="date"
                   value={customToISO}
                   onChange={(e) => setCustomToISO(e.target.value)}
+                  className="w-full sm:w-auto"
                 />
               </div>
             ) : null}
@@ -168,7 +179,7 @@ export default function TransactionsPage() {
         </Card>
       ) : (
         <div className="overflow-hidden rounded-xl border border-emerald-900/30 bg-zinc-950/40">
-          <div className="grid grid-cols-12 gap-3 border-b border-white/5 bg-white/[0.02] px-4 py-3 text-xs font-medium text-zinc-400">
+          <div className="hidden grid-cols-12 gap-3 border-b border-white/5 bg-white/[0.02] px-4 py-3 text-xs font-medium text-zinc-400 sm:grid">
             <div className="col-span-3">Date</div>
             <div className="col-span-4">Title</div>
             <div className="col-span-3">Category</div>
@@ -178,9 +189,10 @@ export default function TransactionsPage() {
           <ul className="divide-y divide-white/5">
             {filteredItems.map((t) => (
               <li key={t.id} className="px-4 py-3">
-                <div className="grid grid-cols-12 items-start gap-3">
-                  <div className="col-span-3 text-sm text-zinc-300">{t.dateISO}</div>
-                  <div className="col-span-4">
+                <div className="grid grid-cols-1 gap-1 sm:grid-cols-12 sm:items-start sm:gap-3">
+                  <div className="text-xs text-zinc-500 sm:hidden">{t.dateISO}</div>
+                  <div className="col-span-3 hidden text-sm text-zinc-300 sm:block">{t.dateISO}</div>
+                  <div className="sm:col-span-4">
                     <div className="text-sm font-medium text-zinc-100">
                       {t.title}
                     </div>
@@ -188,8 +200,10 @@ export default function TransactionsPage() {
                       <div className="mt-1 text-xs text-zinc-500">{t.note}</div>
                     ) : null}
                   </div>
-                  <div className="col-span-3 text-sm text-zinc-300">{t.category}</div>
-                  <div className="col-span-2 text-right">
+                  <div className="text-xs text-zinc-500 sm:col-span-3 sm:text-sm sm:text-zinc-300">
+                    {t.category}
+                  </div>
+                  <div className="flex items-center justify-between sm:col-span-2 sm:block sm:text-right">
                     {t.type === "credit" ? (
                       <div className="text-sm font-semibold text-emerald-300">
                         +{formatMoney(t.amount, currencyCode)}
@@ -202,7 +216,7 @@ export default function TransactionsPage() {
                     <button
                       type="button"
                       onClick={() => dispatch(removeTransaction(t.id))}
-                      className="mt-1 text-xs text-zinc-500 hover:text-zinc-300"
+                      className="text-xs text-zinc-500 hover:text-zinc-300 sm:mt-1"
                     >
                       Delete
                     </button>

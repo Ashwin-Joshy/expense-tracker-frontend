@@ -139,3 +139,11 @@ export function persistState(state: PersistableState): void {
     // localStorage unavailable — silently ignore
   }
 }
+
+export function clearPersistedState(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage unavailable — silently ignore
+  }
+}

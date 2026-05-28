@@ -24,7 +24,12 @@ function formatDate(iso: string) {
   }
 }
 
-export default function ChatSidebar() {
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export default function ChatSidebar({ isOpen, onClose }: Props) {
   const dispatch = useAppDispatch();
   const conversations = useAppSelector((s) => s.aiChat.conversations);
   const currentId = useAppSelector((s) => s.aiChat.currentConversationId);
@@ -61,7 +66,39 @@ export default function ChatSidebar() {
   );
 
   return (
-    <aside className="flex h-full w-72 flex-col border-r border-white/5 bg-zinc-950/60">
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      <aside
+        className={`${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        } fixed inset-y-0 left-0 z-40 w-72 transition-transform duration-200 lg:relative lg:z-auto flex flex-col border-r border-white/5 bg-zinc-950/60`}
+      >
+        <div className="flex items-center justify-between p-3 lg:hidden">
+          <span className="text-sm font-semibold text-zinc-200">Chats</span>
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-zinc-400 hover:text-zinc-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       <div className="p-3">
         <button
           onClick={handleNewChat}
@@ -149,5 +186,6 @@ export default function ChatSidebar() {
         )}
       </div>
     </aside>
+    </>
   );
 }

@@ -114,26 +114,68 @@ export default function Navbar() {
 
           <div className="leading-tight">
             <div className="text-sm font-semibold text-zinc-50">Expense Tracker</div>
-            <div className="text-xs text-zinc-400 group-hover:text-zinc-300">Dark + green vibes</div>
+            <div className="hidden text-xs text-zinc-400 group-hover:text-zinc-300 sm:block">Dark + green vibes</div>
           </div>
         </NavLink>
 
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="flex items-center gap-0.5 sm:gap-2">
           <NavLink to="/" end className={({ isActive }) => navItemClass(isActive)}>
-            Dashboard
+            <span className="hidden sm:inline">Dashboard</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:hidden">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
           </NavLink>
           <NavLink
             to="/transactions"
             className={({ isActive }) => navItemClass(isActive)}
           >
-            Transactions
+            <span className="hidden sm:inline">Transactions</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:hidden">
+              <line x1="8" y1="6" x2="21" y2="6" />
+              <line x1="8" y1="12" x2="21" y2="12" />
+              <line x1="8" y1="18" x2="21" y2="18" />
+              <line x1="3" y1="6" x2="3.01" y2="6" />
+              <line x1="3" y1="12" x2="3.01" y2="12" />
+              <line x1="3" y1="18" x2="3.01" y2="18" />
+            </svg>
+          </NavLink>
+          <NavLink
+            to="/ai-chat"
+            className={({ isActive }) => navItemClass(isActive)}
+          >
+            <span className="flex items-center gap-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5"
+              >
+                <path d="M12 8a2.83 2.83 0 0 0-4 0 2.83 2.83 0 0 0 0 4 2.83 2.83 0 0 0 4 0 2.83 2.83 0 0 0 0-4Z" />
+                <path d="M7.5 13.5c-.93 0-2.07-.2-2.93-.93C3.61 12 3 10.93 3 10a2.83 2.83 0 0 1 4-2.83" />
+                <path d="M16.5 13.5c.93 0 2.07-.2 2.93-.93C20.39 12 21 10.93 21 10a2.83 2.83 0 0 0-4-2.83" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.41" />
+              </svg>
+              <span className="hidden sm:inline">Chat with AI</span>
+            </span>
           </NavLink>
 
           <div ref={addRef} className="relative">
             <button
               type="button"
               onClick={() => setAddOpen((v) => !v)}
-              className="rounded-md border border-emerald-500/25 bg-emerald-500/12 px-3 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/18 hover:text-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              className="rounded-md border border-emerald-500/25 bg-emerald-500/12 px-2 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/18 hover:text-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 sm:px-3 sm:text-sm"
               aria-haspopup="menu"
               aria-expanded={addOpen}
             >

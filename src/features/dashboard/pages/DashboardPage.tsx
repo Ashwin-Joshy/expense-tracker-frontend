@@ -1,14 +1,20 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useAppSelector } from "../../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { loadAllTransactions } from "../../transactions/transactionsSlice";
 import { formatMoney } from "../../../shared/lib/formatMoney";
 import { parseDateISO } from "../../../shared/lib/dateISO";
 import { Card } from "../../../shared/components";
 import ChatButton from "../../aiChat/components/ChatButton";
 
 export default function DashboardPage() {
+  const dispatch = useAppDispatch();
   const { currencyCode } = useAppSelector((s) => s.settings);
   const transactions = useAppSelector((s) => s.transactions.items);
+
+  useEffect(() => {
+    dispatch(loadAllTransactions());
+  }, [dispatch]);
 
   const computed = useMemo(() => {
     const now = new Date();

@@ -73,6 +73,30 @@ export type AuthResponse = {
   user: AuthUser;
 };
 
+export type ReceiptItem = {
+  type: "expense" | "credit";
+  title: string;
+  amount: number;
+  category: string;
+  dateISO: string;
+  note?: string;
+  validationErrors?: string[];
+};
+
+export type UploadReceiptResponse = {
+  pendingReceiptId: string;
+  items: ReceiptItem[];
+  totalExtracted: number;
+  itemsWithErrors: number;
+  conversationId?: string;
+};
+
+export type ConfirmReceiptResponse = {
+  created: number;
+  skipped: number;
+  transactions: Transaction[];
+};
+
 function getBaseUrl(): string {
   const raw = import.meta.env.VITE_API_URL;
   const base = raw?.trim() ? raw.trim() : "http://localhost:3000/api";
@@ -128,6 +152,48 @@ export async function apiRequest<TResponse>(
       : null;
 
   const msg = extracted ?? `Request failed (${res.status})`;
+
+  const err: ApiError = new Error(msg);
+  err.status = res.status;
+  err.details = details;
+  throw err;
+}
+
+export async function apiUpload<TResponse>(
+  path: string,
+  formData: FormData,
+  init?: Omit<RequestInit, "body" | "method"> & { auth?: boolean },
+): Promise<TResponse> {
+  const url = joinUrl(getBaseUrl(), path);
+  const token = init?.auth === false ? null : getAuthToken();
+
+  const res = await fetch(url, {
+    method: "POST",
+    ...init,
+    body: formData,
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(init?.headers ?? {}),
+    },
+  });
+
+  if (res.ok) {
+    return (await readJsonSafe(res)) as TResponse;
+  }
+
+  const details = await readJsonSafe(res);
+  const extracted =
+    details &&
+    typeof details === "object" &&
+    details !== null &&
+    "message" in details &&
+    typeof (details as { message: unknown }).message === "string" &&
+    (details as { message: string }).message.trim().length > 0
+      ? (details as { message: string }).message
+      : null;
+
+  const msg = extracted ?? `Upload failed (${res.status})`;
 
   const err: ApiError = new Error(msg);
   err.status = res.status;
@@ -227,6 +293,20 @@ export const backendApi = {
         `/ai/conversations/${encodeURIComponent(id)}`,
         { method: "DELETE" },
       );
+    },
+    uploadReceipt(file: File, conversationId?: string) {
+      const fd = new FormData();
+      fd.append("receipt", file);
+      const params = conversationId
+        ? `?conversationId=${encodeURIComponent(conversationId)}`
+        : "";
+      return apiUpload<UploadReceiptResponse>(`/ai/receipt${params}`, fd);
+    },
+    confirmReceipt(items: ReceiptItem[]) {
+      return apiRequest<ConfirmReceiptResponse>("/ai/receipt/confirm", {
+        method: "POST",
+        body: JSON.stringify({ items }),
+      });
     },
   },
 } as const;

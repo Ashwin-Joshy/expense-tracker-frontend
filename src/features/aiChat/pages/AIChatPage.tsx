@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { loadConversations, clearError, appendUserMessage } from "../aiChatSlice";
 import { useAiChatSocket } from "../useAiChatSocket";
+import { useReceiptAttachments } from "../hooks/useReceiptAttachments";
 import ChatSidebar from "../components/ChatSidebar";
 import MessageBubble from "../components/MessageBubble";
 import ChatInput from "../components/ChatInput";
@@ -16,6 +17,15 @@ export default function AIChatPage() {
   const currentId = useAppSelector((s) => s.aiChat.currentConversationId);
 
   const { send, cancel, isStreaming } = useAiChatSocket();
+  const {
+    attachments,
+    add: addAttachment,
+    remove: removeAttachment,
+    clear: clearAttachments,
+    isFull,
+    formatReceiptContext,
+  } = useReceiptAttachments();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -41,10 +51,18 @@ export default function AIChatPage() {
   const handleSend = useCallback(
     (message: string) => {
       shouldAutoScroll.current = true;
-      dispatch(appendUserMessage({ content: message }));
-      send(message);
+
+      const receiptContext = formatReceiptContext();
+      let fullMessage = message;
+      if (receiptContext) {
+        fullMessage = `${message}\n\n<attached_receipts>\n${receiptContext}\n</attached_receipts>`;
+      }
+
+      dispatch(appendUserMessage({ content: fullMessage }));
+      send(fullMessage);
+      clearAttachments();
     },
-    [dispatch, send],
+    [dispatch, send, formatReceiptContext, clearAttachments],
   );
 
   const handleSuggested = useCallback(
@@ -200,6 +218,10 @@ export default function AIChatPage() {
           disabled={isStreaming}
           onCancel={cancel}
           isStreaming={isStreaming}
+          onAttach={addAttachment}
+          attachments={attachments}
+          onRemoveAttachment={removeAttachment}
+          isFull={isFull}
         />
       </main>
     </div>

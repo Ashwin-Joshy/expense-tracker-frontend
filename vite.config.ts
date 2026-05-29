@@ -17,6 +17,9 @@ export default defineConfig(async () => {
     build: {
       sourcemap: false,
     },
+    optimizeDeps: {
+      include: ["recharts"],
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

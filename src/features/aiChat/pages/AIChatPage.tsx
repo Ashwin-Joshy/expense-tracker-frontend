@@ -58,7 +58,7 @@ export default function AIChatPage() {
         fullMessage = `${message}\n\n<attached_receipts>\n${receiptContext}\n</attached_receipts>`;
       }
 
-      dispatch(appendUserMessage({ content: fullMessage }));
+      dispatch(appendUserMessage({ content: message }));
       send(fullMessage);
       clearAttachments();
     },

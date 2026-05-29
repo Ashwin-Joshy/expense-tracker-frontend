@@ -75,15 +75,8 @@ export function useReceiptAttachments() {
     );
     if (ready.length === 0) return null;
 
-    const blocks = ready.map((a, i) => {
-      const lines = a.receiptData.map(
-        (item) =>
-          `- ${item.title}: $${item.amount.toFixed(2)} (${item.category}, ${item.dateISO})${item.note ? ` [${item.note}]` : ""}`,
-      );
-      return `[Receipt ${i + 1} - ${a.receiptData.length} item${a.receiptData.length !== 1 ? "s" : ""}]\n${lines.join("\n")}`;
-    });
-
-    return blocks.join("\n\n");
+    const allItems = ready.flatMap((a) => a.receiptData);
+    return JSON.stringify(allItems, null, 2);
   }, [attachments]);
 
   return {

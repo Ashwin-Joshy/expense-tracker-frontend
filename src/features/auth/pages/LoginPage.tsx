@@ -128,10 +128,6 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-xs text-zinc-500">
-          Tip: set <code className="rounded bg-white/5 px-1 py-0.5">VITE_API_URL</code>{" "}
-          to your backend base URL.
-        </p>
       </div>
     </div>
   );

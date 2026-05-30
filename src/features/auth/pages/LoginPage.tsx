@@ -47,7 +47,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12">
         <header className="space-y-2">
-          <h1 className="text-2xl font-bold">Expense Tracker</h1>
+          <h1 className="text-2xl font-bold">Expenso</h1>
           <p className="text-sm text-zinc-400">
             {mode === "login" ? "Sign in to continue." : "Create your account."}
           </p>

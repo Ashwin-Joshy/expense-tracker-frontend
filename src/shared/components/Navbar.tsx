@@ -113,7 +113,7 @@ export default function Navbar() {
           </div>
 
           <div className="hidden leading-tight sm:block">
-            <div className="text-sm font-semibold text-zinc-50">Expense Tracker</div>
+            <div className="text-sm font-semibold text-zinc-50">Expenso</div>
             <div className="text-xs text-zinc-400 group-hover:text-zinc-300">Dark + green vibes</div>
           </div>
         </NavLink>
